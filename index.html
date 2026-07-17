@@ -43,11 +43,15 @@
   }
   .gate-line .gh{font-style:normal}
   .enter-btn{
-    margin-top:46px;font-family:var(--round);font-size:14.5px;letter-spacing:.02em;
-    color:#000;background:#fff;border:none;border-radius:100px;padding:15px 28px;cursor:pointer;
+    margin-top:46px;font-family:var(--round);font-size:15px;letter-spacing:.02em;
+    color:#000;background:#fff;border:none;border-radius:100px;padding:16px 30px;cursor:pointer;
     box-shadow:0 0 0 1px rgba(255,255,255,.3),0 16px 40px -14px rgba(255,255,255,.5);
     transition:transform .25s ease, box-shadow .25s ease;
+    animation:btnpulse 2.8s ease-in-out infinite;
   }
+  @keyframes btnpulse{0%,100%{box-shadow:0 0 0 1px rgba(255,255,255,.3),0 16px 40px -14px rgba(255,255,255,.5)}50%{box-shadow:0 0 0 1px rgba(255,255,255,.55),0 20px 56px -12px rgba(255,255,255,.85)}}
+  .enter-hint{margin-top:18px;font-family:var(--round);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);animation:hintpulse 2.2s ease-in-out infinite}
+  @keyframes hintpulse{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:.95;transform:translateY(4px)}}
   .enter-btn:hover{transform:translateY(-2px)}
   .enter-btn:focus-visible{outline:2px solid #fff;outline-offset:3px}
 
@@ -63,10 +67,12 @@
 
   /* Planets: absolutely positioned inside #space, % based */
   .planet{position:absolute;transform:translate(-50%,-50%);cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:none;padding:0;
-    animation:bob 7s ease-in-out infinite}
-  .planet:nth-child(odd){animation-duration:8.5s}
-  @keyframes bob{0%,100%{margin-top:0}50%{margin-top:-14px}}
+    display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:none;padding:0}
+  /* gentle slow float for planets and stars */
+  .floaty{animation-name:drift;animation-timing-function:ease-in-out;animation-iteration-count:infinite;will-change:margin}
+  @keyframes drift{0%,100%{margin:0}25%{margin:-9px 0 0 6px}50%{margin:-15px 0 0 0}75%{margin:-7px 0 0 -6px}}
+  .starbtn svg.tw{animation:twinkle 3.4s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.72;transform:scale(.9)}50%{opacity:1;transform:scale(1.08)}}
   .orb{border-radius:50%;position:relative}
   .orb::after{content:"";position:absolute;inset:0;border-radius:50%;
     box-shadow:inset -10px -12px 22px rgba(0,0,0,.55), inset 6px 6px 14px rgba(255,255,255,.12)}
@@ -173,6 +179,7 @@
   <div class="gate-heart">🤍</div>
   <div class="gate-line">hope is not that much <span class="gh">🤍</span></div>
   <button class="enter-btn" id="enterBtn">Igual me vale pija</button>
+  <div class="enter-hint">toca aquí 👆</div>
 </div>
 
 <!-- Interactive space -->
@@ -219,6 +226,13 @@ const SONGS = [
 
 /* ================= BUILD SPACE SCENE (DOM) ================= */
 const space = document.getElementById('space');
+const mobile = innerWidth < 640;
+const SC = mobile ? 1.4 : 1;
+function floatify(el){
+  el.classList.add('floaty');
+  el.style.animationDuration = (9 + Math.random()*5).toFixed(1)+'s';
+  el.style.animationDelay = (-Math.random()*7).toFixed(1)+'s';
+}
 
 function starSVG(size, bright){
   const c = bright ? "#ffffff" : "#eef0ff";
@@ -227,8 +241,12 @@ function starSVG(size, bright){
   </svg>`;
 }
 
-const starPositions = [
-  {x:28,y:26,big:true},   // Si me preguntaran — brightest
+const starPositions = mobile ? [
+  {x:27,y:23,big:true},
+  {x:67,y:16},
+  {x:48,y:39}
+] : [
+  {x:28,y:26,big:true},
   {x:62,y:20},
   {x:48,y:44}
 ];
@@ -239,33 +257,38 @@ SONGS.forEach((s,i)=>{
   a.href = s.url; a.target = '_blank'; a.rel = 'noopener';
   a.style.left = pos.x+'%'; a.style.top = pos.y+'%';
   a.setAttribute('aria-label', 'Abrir canción en Apple Music');
-  a.innerHTML = starSVG(pos.big?36:24, pos.big);
+  a.innerHTML = starSVG(Math.round((pos.big?38:26)*SC), pos.big);
+  const svg = a.querySelector('svg'); if(svg){ svg.classList.add('tw'); svg.style.animationDelay=(-Math.random()*3).toFixed(1)+'s'; }
+  floatify(a);
   space.appendChild(a);
 });
 
 const planetDefs = [
-  {cls:'planet-hulk',  x:78, y:60, name:'Planeta de Hulk', action:()=>openModal('planetModal')},
-  {cls:'planet-photo', x:17, y:69, name:'Foto', key:'p1', size:74,
+  {cls:'planet-hulk',  x:78, y:60, mx:74, my:53, name:'Planeta de Hulk', size:74, action:()=>openModal('planetModal')},
+  {cls:'planet-photo', x:17, y:69, mx:23, my:64, name:'Foto', key:'p1', size:74,
    grad:'radial-gradient(circle at 35% 30%,#7aa8ff 0%,#3f63c8 45%,#24356e 78%,#0d1430 100%)', glow:'rgba(120,150,255,.25)'},
-  {cls:'planet-photo', x:39, y:82, name:'Foto', key:'p2', size:58,
+  {cls:'planet-photo', x:39, y:82, mx:37, my:83, name:'Foto', key:'p2', size:58,
    grad:'radial-gradient(circle at 35% 30%,#f0c48a 0%,#c88a45 45%,#7a4a22 78%,#331f0d 100%)', glow:'rgba(232,185,138,.22)'},
-  {cls:'planet-photo', x:62, y:86, name:'Foto', key:'p3', size:66,
+  {cls:'planet-photo', x:62, y:86, mx:72, my:75, name:'Foto', key:'p3', size:66,
    grad:'radial-gradient(circle at 35% 30%,#d99ae8 0%,#9b56c0 45%,#5a2f7a 78%,#2a153a 100%)', glow:'rgba(200,150,230,.22)'},
 ];
 planetDefs.forEach(pl=>{
   const btn = document.createElement('button');
   btn.className = 'planet '+pl.cls;
-  btn.style.left = pl.x+'%'; btn.style.top = pl.y+'%';
+  const px = (mobile && pl.mx!=null)?pl.mx:pl.x;
+  const py = (mobile && pl.my!=null)?pl.my:pl.y;
+  btn.style.left = px+'%'; btn.style.top = py+'%';
   btn.setAttribute('aria-label', pl.name);
   const orb = document.createElement('span');
   orb.className = 'orb';
-  if(pl.size){ orb.style.width = pl.size+'px'; orb.style.height = pl.size+'px'; }
+  if(pl.size){ const sz=Math.round(pl.size*SC); orb.style.width = sz+'px'; orb.style.height = sz+'px'; }
   if(pl.grad){ orb.style.background = pl.grad; if(pl.glow) orb.style.boxShadow = '0 0 26px 3px '+pl.glow; }
   btn.appendChild(orb);
   btn.addEventListener('click', ()=>{
     if(pl.action) return pl.action();
     if(pl.key) openPhoto(pl.key);
   });
+  floatify(btn);
   space.appendChild(btn);
 });
 
