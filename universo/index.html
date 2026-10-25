@@ -87,7 +87,8 @@
   .ready .hero .line:nth-child(2) > *{transition-delay:.12s}
   .ready .hero .line:nth-child(3) > *{transition-delay:.24s}
 
-  @media (min-width:960px){
+  /* side-by-side whenever the screen is wide, not only on big desktops */
+  @media (min-width:960px), (min-width:560px) and (min-aspect-ratio:1/1){
     .hero-media{inset:0 0 0 44%}
     .hero-media::after{display:none}
     .hero-media img{object-position:50% 30%}
@@ -95,7 +96,7 @@
       linear-gradient(90deg,var(--night) 0%,var(--night) 44%,rgba(11,10,9,.55) 52%,rgba(11,10,9,0) 64%),
       linear-gradient(180deg,rgba(11,10,9,.45) 0%,rgba(11,10,9,0) 25%,rgba(11,10,9,0) 70%,rgba(11,10,9,.8) 100%)}
     .hero-copy{right:auto;width:52%;top:50%;bottom:auto;transform:translateY(-50%);padding-left:3vw}
-    .hero h1{font-size:clamp(150px,15vw,250px)}
+    .hero h1{font-size:clamp(84px,13vw,250px)}
   }
 
   /* ---------------- scrubbed text ---------------- */
